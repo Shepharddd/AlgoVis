@@ -9,14 +9,12 @@ class Tile extends Component {
         row: this.props.row,
         col: this.props.col,
         visited: false,
-        weight: 0,
-        isWall: false,
+        isWall: this.props.isWall,
       };
       this.toggleWall = this.toggleWall.bind(this);
     }
 
     toggleWall() {
-        console.log("toggleWall");
         let currState = this.state.isWall;
         this.setState({ isWall: !currState });
     }
@@ -29,9 +27,6 @@ class Tile extends Component {
         <div 
             id={`node-${this.state.row}-${this.state.col}`}
             className={`square ${extraClass}`} 
-            onMouseDown={this.toggleWall}
-            onDragEnter={this.toggleWall}
-            onDragStart={this.toggleWall}
         />
       );
     }

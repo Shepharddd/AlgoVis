@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/Shepharddd/AlgoVis/static/css/main.000c195d.css",
-    "main.js": "/Shepharddd/AlgoVis/static/js/main.eda17bd3.js",
-    "static/js/787.fcde6b33.chunk.js": "/Shepharddd/AlgoVis/static/js/787.fcde6b33.chunk.js",
-    "index.html": "/Shepharddd/AlgoVis/index.html",
-    "main.000c195d.css.map": "/Shepharddd/AlgoVis/static/css/main.000c195d.css.map",
-    "main.eda17bd3.js.map": "/Shepharddd/AlgoVis/static/js/main.eda17bd3.js.map",
-    "787.fcde6b33.chunk.js.map": "/Shepharddd/AlgoVis/static/js/787.fcde6b33.chunk.js.map"
+    "main.css": "/static/css/main.000c195d.css",
+    "main.js": "/static/js/main.c6c3260d.js",
+    "static/js/787.fcde6b33.chunk.js": "/static/js/787.fcde6b33.chunk.js",
+    "index.html": "/index.html",
+    "main.000c195d.css.map": "/static/css/main.000c195d.css.map",
+    "main.c6c3260d.js.map": "/static/js/main.c6c3260d.js.map",
+    "787.fcde6b33.chunk.js.map": "/static/js/787.fcde6b33.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.000c195d.css",
-    "static/js/main.eda17bd3.js"
+    "static/js/main.c6c3260d.js"
   ]
 }

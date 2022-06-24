@@ -6,7 +6,9 @@ class Header extends Component {
     render() { 
         return (
             <div className="header_container"> 
-                Header!
+                <p>
+                    Your favourite website's favorite website.
+                </p>
             </div>
         );
     }

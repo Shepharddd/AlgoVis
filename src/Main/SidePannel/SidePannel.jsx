@@ -40,12 +40,12 @@ class SidePannel extends Component {
                 <div 
                     className={`category-${this.state.searchInit === true ? 'init' : this.state.searchOpen ? 'open' : 'closed'}`}
                     onClick={() => this.props.algoHandler('Dijkstra')}>
-                    <p>Dijkstra</p>
+                    <p>Dijkstra (Coming soon)</p>
                 </div>
                 <div 
                     className={`category-${this.state.searchInit === true ? 'init' : this.state.searchOpen ? 'open' : 'closed'}`}
                     onClick={() => this.props.algoHandler('A-Star')}>
-                    <p>A Star</p>
+                    <p>A Star (Coming soon)</p>
                 </div>
             </div>
         );

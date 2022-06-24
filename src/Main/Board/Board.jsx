@@ -12,6 +12,13 @@ class Board extends Component {
         this.state = {
             nodes: [],
             mouseDown: false,
+            placeStart: false,
+            placeEnd: false,
+            placeWall: false,
+            startX: 0,
+            startY: 0,
+            finishX: 29,
+            finishY: 49,
         };
     }
 
@@ -25,17 +32,79 @@ class Board extends Component {
     }
 
     handleMouseDown(row, col) {
-        console.log("mouseDown: ");
         const grid = this.state.nodes;
-        const newNodes = this.placeNewWall(grid, row, col);
+        var newNodes;
+        if (this.state.placeStart)     { newNodes = this.placeStartCell(grid, row, col) }
+        else if (this.state.placeEnd)  { newNodes = this.placeEndCell(grid, row, col) }
+        else if (this.state.placeWall) { newNodes = this.placeNewWall(grid, row, col);} 
+        else { return };
         this.setState({nodes: newNodes, mouseDown: true}); 
     }
 
     handleMouseEnter(row, col) {
-        if (!this.state.mouseDown) return;
+        if (!this.state.mouseDown || !this.state.placeWall) return;
         const grid = this.state.nodes;
-        const newNodes = this.placeNewWall(grid, row, col);
+        var newNodes = this.placeNewWall(grid, row, col);   
         this.setState({nodes: newNodes}); 
+    }
+
+    resetButtons() {
+        this.setState({placeStart: false});
+        this.setState({placeEnd: false});
+        this.setState({placeWall: false});
+    }
+
+    toggleStartCell() {
+        if (!this.state.placeStart) { this.resetButtons(); }
+        this.setState({placeStart: !this.state.placeStart});
+    }
+
+    toggleEndCell() {
+        if (!this.state.placeEnd) { this.resetButtons(); }
+        this.setState({placeEnd: !this.state.placeEnd});
+    }
+
+    togglePlaceWall() {
+        if (!this.state.placeWall) { this.resetButtons(); }
+        this.setState({placeWall: !this.state.placeWall});
+    }
+
+    placeStartCell(grid, row, col) {
+        if (row === this.state.finishX && col === this.state.finishY) { return grid; }
+        const newGrid = grid.slice();
+        var node = newGrid[row][col];
+        var newNode = {
+            ...node,
+            isStart: true,
+        };
+        newGrid[row][col] = newNode;
+        node = newGrid[this.state.startX][this.state.startY];
+        newNode = {
+            ...node,
+            isStart: false,
+        };
+        newGrid[this.state.startX][this.state.startY] = newNode;
+        this.setState({startX: row, startY: col});
+        return newGrid;
+    }
+
+    placeEndCell(grid, row, col) {
+        if (row === this.state.startX && col === this.state.startY) { return grid; }
+        const newGrid = grid.slice();
+        var node = newGrid[row][col];
+        var newNode = {
+            ...node,
+            isFinish: true,
+        };
+        newGrid[row][col] = newNode;
+        node = newGrid[this.state.finishX][this.state.finishY];
+        newNode = {
+            ...node,
+            isFinish: false,
+        };
+        newGrid[this.state.finishX][this.state.finishY] = newNode;
+        this.setState({finishX: row, finishY: col});
+        return newGrid;
     }
 
     placeNewWall(grid, row, col) {
@@ -49,20 +118,32 @@ class Board extends Component {
         return newGrid;
     }
 
+    startAnimation() {
+        this.DFSVisit();
+        return;
+    }
+
+    removeWalls() {
+        const nodesList = this.getStartGrid();
+        this.setState({nodes: nodesList}); 
+    }
+
     getStartGrid() {
         const nodesList = [];
         for (let row = 0; row < MAX_ROWS; row++) {
             const currentRow = [];
             for (let col = 0; col < MAX_COLS; col++) {
                 const neighbours = [];
-                if (row > 0       ) { neighbours.push((row-1, col)); }
-                if (row < MAX_ROWS) { neighbours.push((row+1, col)); }
-                if (col > 0       ) { neighbours.push((row, col-1)); }
-                if (col > MAX_COLS) { neighbours.push((row, col+1)); }
+                if (row > 0         ) { neighbours.push([row-1, col]); };
+                if (row < MAX_ROWS-1) { neighbours.push([row+1, col]); };
+                if (col > 0         ) { neighbours.push([row, col-1]); };
+                if (col < MAX_COLS-1) { neighbours.push([row, col+1]); };
                 const currentNode = {
                     col,
                     row,
                     isWall: false,
+                    isStart: (col === 0 && row === 0),
+                    isFinish: (col === MAX_COLS-1 && row === MAX_ROWS-1),
                     visited: false,
                     neighbours: neighbours,
                 };
@@ -70,23 +151,125 @@ class Board extends Component {
             }
             nodesList.push(currentRow);
         }
+        console.log(nodesList);
+        this.setState({ startX: 0, startY: 0 });
         return nodesList;
     }
 
+    async BFSVisit() {
+        const grid = this.state.nodes.slice();
+        const startX = this.state.startX;
+        const startY = this.state.startY;
+
+        var queue = [];
+        queue.push(grid[startX][startY]);
+
+        while (queue.length) {
+            var currNode = queue.shift();
+
+           
+            for (let i = 0; i < currNode.neighbours.length; i++) {
+                console.log(currNode.neighbours[i]);
+                var neighbour = currNode.neighbours[i];
+                var neighbourNode = grid[neighbour[0]][neighbour[1]];
+                if (!neighbourNode.visited && !neighbourNode.isWall) {
+                    queue.push(neighbourNode);
+
+                    const newGrid = this.state.nodes.slice();
+                    const node = newGrid[neighbour[0]][neighbour[1]];
+                    const newNode = {
+                        ...node,
+                        visited: true,
+                    };
+                    newGrid[neighbour[0]][neighbour[1]] = newNode;
+                    this.setState({nodes: newGrid});
+
+                    await new Promise(resolve => setTimeout(resolve, 10))
+                    
+                }
+            }
+        }
+    }
+
+    async DFSVisit() {
+        const grid = this.state.nodes.slice();
+        const startX = this.state.startX;
+        const startY = this.state.startY;
+
+        var stack = [];
+
+        stack.push(grid[startX][startY]);
+
+        while (stack.length) {
+            var currNode = stack.pop();
+            
+            if (!currNode.visited) {
+                const newGrid = this.state.nodes.slice();
+                const node = newGrid[currNode.row][currNode.col];
+                const newNode = {
+                    ...node,
+                    visited: true,
+                };
+                newGrid[currNode.row][currNode.col] = newNode;
+                this.setState({nodes: newGrid});
+
+                await new Promise(resolve => setTimeout(resolve, 1))
+            }
+
+            for (let i = 0; i < currNode.neighbours.length; i++) {
+                var neighbour = currNode.neighbours[i];
+                var neighbourNode = grid[neighbour[0]][neighbour[1]];
+                if(!neighbourNode.visited) {
+                    stack.push(neighbourNode)
+                }
+            }
+        
+        }
+    }
+
     render() { 
-        const { nodes, mouseDown } = this.state;
+        const nodes = this.state.nodes;
         return (
             <div className='board-container'>
+                <div className='button-container'>
+                    <div id={`${this.state.placeStart ? 'selected' : ''}`}
+                        className='button-cell'      
+                        onClick={() => this.toggleStartCell()}>
+                            <p>Start Cell</p>
+                    </div>
+                    <div id={`${this.state.placeEnd ? 'selected' : ''}`} 
+                        className='button-cell'      
+                        onClick={() => this.toggleEndCell()}>
+                            <p>End Cell</p>
+                    </div>
+                    <div id='button-cell' 
+                        className='button-cell'   
+                        onClick={() => this.startAnimation()}>
+                            <p>Begin Animation</p>
+                    </div>
+                    <div id={`${this.state.placeWall ? 'selected' : ''}`}
+                        className='button-cell'
+                        onClick={() => this.togglePlaceWall()}>
+                            <p>Add Walls</p>
+                    </div>
+                    <div id='button-cell' 
+                        className='button-cell' 
+                        onClick={() => this.removeWalls()}>
+                            <p>Reset Board</p>
+                    </div>
+                </div>
                 <div className='tile-container'>
                     {nodes.map((row, rowIndex) => {
                         return <div className='tile-row' key={rowIndex}>
                             {row.map((node, nodeIndex) => {
-                                var { col, row, isWall, visited, neighbours } = node;
+                                var { col, row, isWall, isStart, isFinish, visited, neighbours } = node;
                                 return <Tile 
                                     key={col} 
                                     row={row} 
                                     col={col}
                                     isWall={isWall} 
+                                    isStart={isStart} 
+                                    isFinish={isFinish} 
                                     visited={visited} 
                                     neighbours={neighbours}
                                     onMouseDown={(row, col) => this.handleMouseDown(row, col)}

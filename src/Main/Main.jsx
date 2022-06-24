@@ -5,7 +5,12 @@ import Board from './Board/Board'
 
 
 class Main extends Component {
-    state = {  } 
+    constructor(props) {
+        super(props);
+        this.state = {
+            algo: "dykstra",
+        };
+    }
     render() { 
         return (
             <div className="main_container">

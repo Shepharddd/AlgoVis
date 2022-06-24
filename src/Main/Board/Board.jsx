@@ -19,6 +19,8 @@ class Board extends Component {
             startY: 0,
             finishX: 29,
             finishY: 49,
+            algo: this.props.algo,
+            algoritmRunning: false,
         };
     }
 
@@ -118,11 +120,6 @@ class Board extends Component {
         return newGrid;
     }
 
-    startAnimation() {
-        this.DFSVisit();
-        return;
-    }
-
     removeWalls() {
         const nodesList = this.getStartGrid();
         this.setState({nodes: nodesList}); 
@@ -156,7 +153,19 @@ class Board extends Component {
         return nodesList;
     }
 
+    startAnimation() {
+        if (this.state.algoritmRunning) { 
+            this.setState({algoritmRunning: false}); 
+            return; 
+        } 
+        if (this.props.algo === 'DFS') { this.DFSVisit(); }
+        if (this.props.algo === 'BFS') { this.BFSVisit(); }
+    }
+
     async BFSVisit() {
+
+        await this.setState({algoritmRunning: true});
+
         const grid = this.state.nodes.slice();
         const startX = this.state.startX;
         const startY = this.state.startY;
@@ -164,9 +173,9 @@ class Board extends Component {
         var queue = [];
         queue.push(grid[startX][startY]);
 
-        while (queue.length) {
-            var currNode = queue.shift();
+        while (queue.length && this.state.algoritmRunning) {
 
+            var currNode = queue.shift();
            
             for (let i = 0; i < currNode.neighbours.length; i++) {
                 console.log(currNode.neighbours[i]);
@@ -184,14 +193,20 @@ class Board extends Component {
                     newGrid[neighbour[0]][neighbour[1]] = newNode;
                     this.setState({nodes: newGrid});
 
-                    await new Promise(resolve => setTimeout(resolve, 10))
+                    await new Promise(resolve => setTimeout(resolve, 1))
                     
                 }
             }
         }
+        this.setState({algoritmRunning: false})
     }
 
     async DFSVisit() {
+
+        console.log('DFS');
+
+        await this.setState({algoritmRunning: true});
+
         const grid = this.state.nodes.slice();
         const startX = this.state.startX;
         const startY = this.state.startY;
@@ -200,7 +215,9 @@ class Board extends Component {
 
         stack.push(grid[startX][startY]);
 
-        while (stack.length) {
+        console.log(this.state.algoritmRunning);
+        while (stack.length && this.state.algoritmRunning) {
+
             var currNode = stack.pop();
             
             if (!currNode.visited) {
@@ -219,12 +236,19 @@ class Board extends Component {
             for (let i = 0; i < currNode.neighbours.length; i++) {
                 var neighbour = currNode.neighbours[i];
                 var neighbourNode = grid[neighbour[0]][neighbour[1]];
-                if(!neighbourNode.visited) {
+                if(!neighbourNode.visited && !neighbourNode.isWall) {
                     stack.push(neighbourNode)
                 }
             }
-        
         }
+        this.setState({algoritmRunning: false})
+    }
+
+    async Dijkstra() {
+
+        console.log('Dijkstra');
+
+        
     }
 
     render() { 
@@ -245,7 +269,7 @@ class Board extends Component {
                     <div id='button-cell' 
                         className='button-cell'   
                         onClick={() => this.startAnimation()}>
-                            <p>Begin Animation</p>
+                            <p>{this.state.algoritmRunning ? "Stop" : "Begin " + this.props.algo}</p>
                     </div>
                     <div id={`${this.state.placeWall ? 'selected' : ''}`}
                         className='button-cell'
